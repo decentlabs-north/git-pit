@@ -1,0 +1,34 @@
+{
+  "name": "git-pit",
+  "version": "0.1.0",
+  "description": "Peer to Peer Git",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "standard",
+    "test": "node test.js",
+    "debug": "node inspect test.js",
+    "prepublishOnly": "standard && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://https://github.com/telamohn/git-pit"
+  },
+  "author": "Tony Ivanov",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/telamohn/git-pit"
+  },
+  "homepage": "https://github.com/telamohn/git-pit",
+  "devDependencies": {
+    "standard": "^17.0.0",
+    "tapzero": "^0.6.1"
+  },
+  "dependencies": {
+    "hyperdrive": "^10.21.0",
+    "hyperswarm": "^4.3.7",
+    "localdrive": "^1.5.0",
+    "mirror-drive": "^1.2.2",
+    "recursive-watch": "^1.1.4"
+  }
+}

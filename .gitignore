@@ -1,0 +1,10 @@
+# Reverse policy .gitignore
+# Blocks are permanent, so are your accidental co.
+*
+!README.md
+!LICENSE
+!package.json
+!index.js
+!test.js
+!.editorconfig
+!.gitignore
