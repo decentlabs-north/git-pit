@@ -19,12 +19,12 @@ test('test-scenario', async t => {
   const keyA = await spawnMaintainer('./tmp/a')
   const stopA = await seed('./tmp/a')
 
-  const keyB = await spawnContributor('./tmp/b', 'bob')
+  const keyB = await spawnContributor(keyA, './tmp/b', 'bob')
   await spawnCommit('./tmp/b', 'B stands for best')
   await add('./tmp/a', keyB)
   await sync('./tmp/b')
 
-  const keyC = await spawnContributor('./tmp/c', 'charlie')
+  const keyC = await spawnContributor(keyA, './tmp/c', 'charlie')
   await add('./tmp/a', keyC)
   await sync('./tmp/c')
 
@@ -46,8 +46,9 @@ test('test-scenario', async t => {
 })
 
 async function spawnMaintainer (repo, name) {
-  await exec(`echo 'First insert: ${name}' >> README.md`, { cwd: repo })
+  await exec(`mkdir -p ${repo}`)
   await exec('git init .', { cwd: repo })
+  await exec(`echo 'First insert: ${name}' >> README.md`, { cwd: repo })
   await exec('git add README.md', { cwd: repo })
   return await init(repo)
 }

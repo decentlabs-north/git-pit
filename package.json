@@ -25,8 +25,9 @@
     "tapzero": "^0.6.1"
   },
   "dependencies": {
-    "hyperdrive": "^10.21.0",
+    "hyperdrive": "next",
     "hyperswarm": "^4.3.7",
+    "corestore": "^6.4.2",
     "localdrive": "^1.5.0",
     "mirror-drive": "^1.2.2",
     "recursive-watch": "^1.1.4"
