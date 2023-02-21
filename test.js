@@ -1,4 +1,5 @@
 import { test } from 'tapzero'
+import Corestore from 'corestore'
 import {
   exec,
   init,
@@ -50,15 +51,15 @@ async function spawnMaintainer (repo, name) {
   await exec('git init .', { cwd: repo })
   await exec(`echo 'First insert: ${name}' >> README.md`, { cwd: repo })
   await exec('git add README.md', { cwd: repo })
+  await exec('git commit -am "First commit"')
+
   return await init(repo)
 }
 
 async function spawnContributor (key, repo, name) {
-  // TODO: not implemented
-
   // Clone as seeder
   await clone(key, repo)
-
+  console.log('Cloned')
   // Upgrade to contributor.
   return await init(repo, { name })
 }
