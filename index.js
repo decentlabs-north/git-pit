@@ -43,7 +43,14 @@ export async function isGitRepo () {
 }
 
 export async function isMaintainer (repo) {
+  /*if (isContributor(repo)) {
+    return authors.firstLine === self.key
+  } else false*/
   return true
+}
+
+export async function isContributor (repo) {
+  throw new Error('Not Implemented')
 }
 
 export async function mkdirp (p) {
@@ -63,8 +70,10 @@ export async function init (repo, opts = {}) {
     name: opts.name || await exec('git config --global --get user.name'),
     email: opts.name || await exec('git config --global --get user.email')
   }
+  await pitIgnore(repo)
   await writeFile(join(repo, PEER_FILE), JSON.stringify(peerInfo))
   if (await isMaintainer(repo)) await appendFile(join(repo, AUTHORS_FILE), key)
+  // TODO: import filter .git/remotes
   const stats = await mirror(await localDrive(join(repo, '.git')), drive)
   D('pit> imported', stats)
   await drive.close()
@@ -92,13 +101,20 @@ export async function clone (key, dst) {
   const hd = await hyperDrive(cs, key)
   const ld = await localDrive(join(dst, MAIN_DIR))
   const peerDown = await peerUp(hd.discoveryKey, hd.corestore)
+
+  // Checkout maintainer's .git repo
   const stats = await mirror(hd, ld)
-  await exec(`git init ${dst}`)
-  console.log('CWD1: ', process.cwd())
-  const mainPath = join(process.cwd(), dst, MAIN_DIR) // Git-remotes require absolute paths
-  await exec(`cd ${dst} && git remote add -f origin ${mainPath}`)
-  console.log('CWD2: ', process.cwd())
-  D('pit> cloned', stats)
+
+  // Files mirrored, do checkout.
+  await exec('git init .', { cwd: dst })
+  await pitIgnore(dst)
+  await exec(`git remote add -f origin ${MAIN_DIR}`, { cwd: dst }) // -m ${branch} -t {branch}
+  await exec('git remote set-head origin -a', { cwd: dst })
+  await exec('git merge origin', { cwd: dst })
+
+  D('pit> clone complete', stats)
+
+  // cleanup
   await hd.close()
   await cs.close()
   await peerDown()
@@ -120,6 +136,11 @@ export async function seed (repo) {
   // Init all uninitialized drives
   const drives = await Promise.all(keys.map(k => hyperDrive(cs, k)))
   const main = drives[0]
+  if (isMaintainer(repo) || isContributor(repo)) {
+    const ld = localDrive(repo)
+    const md = await mirror(ld, main, true)
+    // defer md.done()
+  }
   const peerDown = await peerUp(main.discoveryKey, main.corestore)
 
   return async function deinit () {
@@ -174,8 +195,9 @@ async function touch (store) {
   return drive
 }
 
-async function mirror (src, dst) {
+async function mirror (src, dst, live = false) {
   const mirror = new MirrorDrive(src, dst)
+  if (live) return mirror
   await mirror.done()
   return mirror.count
 }
@@ -195,7 +217,17 @@ async function localDrive (repo) {
   return d
 }
 
-// function cwd () { return process.cwd() }
+async function pitIgnore (repo) {
+  const file = join(repo, '.git/info/exclude')
+  const buf = await readFile(file)
+  const ignored = buf.toString('utf8')
+    .split(/[\r\n]+/)
+    .find(l => l === '.pit/')
+  if (ignored) return false
+  await appendFile(file, 'pit/\n')
+  return true
+}
+
 /*
 async function stat (path) {
   try {
