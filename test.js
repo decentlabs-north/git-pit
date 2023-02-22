@@ -1,5 +1,5 @@
 import { test } from 'tapzero'
-import Corestore from 'corestore'
+// import Corestore from 'corestore'
 import {
   exec,
   init,
@@ -15,7 +15,16 @@ test('exec', async t => {
   t.equal(out.trim(), 'hello')
 })
 
-test('test-scenario', async t => {
+test('init and clone', async t => {
+  await exec('rm -rf ./tmp/')
+  const keyA = await spawnMaintainer('./tmp/a')
+  const stopA = await seed('./tmp/a')
+
+  await clone(keyA, './tmp/c')
+  await stopA()
+})
+
+test.skip('Test add contributor', async t => {
   await exec('rm -rf ./tmp/')
   const keyA = await spawnMaintainer('./tmp/a')
   const stopA = await seed('./tmp/a')

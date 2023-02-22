@@ -2,7 +2,7 @@
 import { exec as nExec } from 'node:child_process'
 import {
   mkdir,
-  stat as nstat,
+  // stat as nstat,
   writeFile,
   appendFile,
   readFile
@@ -43,9 +43,11 @@ export async function isGitRepo () {
 }
 
 export async function isMaintainer (repo) {
-  /*if (isContributor(repo)) {
+  /*
+   * if (isContributor(repo)) {
     return authors.firstLine === self.key
-  } else false*/
+  } else false
+  */
   return true
 }
 
@@ -137,14 +139,14 @@ export async function seed (repo) {
     .filter(k => k.trim().length)
   if (!keys.length) throw new Error('Nothing to seed!')
   // Init all uninitialized drives
-  const mirrors = []
+  const mirrors = [] // exports
   const drives = await Promise.all(keys.map(k => hyperDrive(cs, k)))
   const main = drives[0]
   if (isMaintainer(repo) || isContributor(repo)) {
-    const ld = localDrive(repo)
-    const mend = await mirror(ld, main)
-    mirrors.push(mend)
-    // defer md.done()
+    // TODO: make import
+    const ld = await localDrive(repo)
+    const done = await mirror(ld, main)
+    await done()
   }
   const peerDown = await peerUp(main.discoveryKey, main.corestore)
 
