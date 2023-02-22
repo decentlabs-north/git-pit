@@ -144,7 +144,7 @@ export async function seed (repo) {
   const main = drives[0]
   if (isMaintainer(repo) || isContributor(repo)) {
     // TODO: make import
-    const ld = await localDrive(repo)
+    const ld = await localDrive(join(repo, '.git'))
     const done = await mirror(ld, main)
     await done()
   }
