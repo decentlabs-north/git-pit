@@ -65,10 +65,11 @@ export async function init (repo, opts = {}) {
   const drive = await touch(cs)
 
   const key = drive.key.toString('hex')
+  const na = err => { console.error(err); return 'unknownPeer' }
   const peerInfo = {
     key,
-    name: opts.name || await exec('git config --global --get user.name'),
-    email: opts.name || await exec('git config --global --get user.email')
+    name: opts.name || await exec('git config --global --get user.name').catch(na),
+    email: opts.name || await exec('git config --global --get user.email').catch(na)
   }
   await pitIgnore(repo)
   await writeFile(join(repo, PEER_FILE), JSON.stringify(peerInfo))

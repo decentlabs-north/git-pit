@@ -4,6 +4,7 @@
   const { Command } = await import('commander')
   const {
     init,
+    seed,
     clone
   } = await import('./index.js')
 
@@ -29,7 +30,7 @@
       const repo = process.cwd()
       const key = await init(repo)
       console.error('Initialized Pit as Maintainer, share:')
-      console.log(key.hexSlice())
+      console.log(key)
     })
 
   program.command('clone')
@@ -47,7 +48,12 @@
 
   program.command('seed')
     .description('Alias to "sync --live"')
-    .action(() => console.error('Not Implemented'))
+    .action(async () => {
+      await seed(process.cwd()) // returns stopFn
+      console.error('Seeding:')
+      // TODO: console.log(mainKey)
+      console.error('Press Ctrl+c to stop')
+    })
 
   program.command('add')
     .description('Add contributor to repo')
