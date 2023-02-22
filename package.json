@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "description": "Peer to Peer Git",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "bin.js",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "pit": "./bin.js"
   },

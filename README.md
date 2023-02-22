@@ -38,6 +38,7 @@ Press Ctrl+c to stop
 **Contributor does**
 ```bash
 $ clone 34516d47463994d0acaa16014d4718b5f7aba74040d91bcd5fcbd5d962e6b974 the-project
+pit> clone complete { files: 52, add: 52, remove: 0, change: 0 }
 ```
 
 ## Status
