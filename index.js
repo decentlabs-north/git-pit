@@ -74,7 +74,8 @@ export async function init (repo, opts = {}) {
   await writeFile(join(repo, PEER_FILE), JSON.stringify(peerInfo))
   if (await isMaintainer(repo)) await appendFile(join(repo, AUTHORS_FILE), key)
   // TODO: import filter .git/remotes
-  const stats = await mirror(await localDrive(join(repo, '.git')), drive)
+  const mend = await mirror(await localDrive(join(repo, '.git')), drive)
+  const stats = await mend()
   D('pit> imported', stats)
   await drive.close()
   await cs.close()
@@ -103,7 +104,8 @@ export async function clone (key, dst) {
   const peerDown = await peerUp(hd.discoveryKey, hd.corestore)
 
   // Checkout maintainer's .git repo
-  const stats = await mirror(hd, ld)
+  const mend = await mirror(hd, ld)
+  const stats = await mend()
 
   // Files mirrored, do checkout.
   await exec('git init .', { cwd: dst })
@@ -134,16 +136,21 @@ export async function seed (repo) {
     .filter(k => k.trim().length)
   if (!keys.length) throw new Error('Nothing to seed!')
   // Init all uninitialized drives
+  const mirrors = []
   const drives = await Promise.all(keys.map(k => hyperDrive(cs, k)))
   const main = drives[0]
   if (isMaintainer(repo) || isContributor(repo)) {
     const ld = localDrive(repo)
-    const md = await mirror(ld, main, true)
+    const mend = await mirror(ld, main)
+    mirrors.push(mend)
     // defer md.done()
   }
   const peerDown = await peerUp(main.discoveryKey, main.corestore)
 
   return async function deinit () {
+    for (const mend of mirrors) {
+      console.log('Mirror End:', await mend())
+    }
     for (const drive of drives) await drive.close()
     await cs.close()
     await peerDown()
@@ -195,11 +202,13 @@ async function touch (store) {
   return drive
 }
 
-async function mirror (src, dst, live = false) {
+async function mirror (src, dst) {
   const mirror = new MirrorDrive(src, dst)
-  if (live) return mirror
-  await mirror.done()
-  return mirror.count
+  return async () => {
+    await mirror.done()
+    // TODO: await mirror.close() ?
+    return mirror.count
+  }
 }
 
 async function hyperDrive (cs, key) {

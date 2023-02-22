@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Peer to Peer Git",
   "main": "index.js",
+  "bin": {
+    "pit": "./bin.js"
+  },
   "type": "module",
   "scripts": {
     "lint": "standard",
@@ -25,9 +28,10 @@
     "tapzero": "^0.6.1"
   },
   "dependencies": {
+    "commander": "^10.0.0",
+    "corestore": "^6.4.2",
     "hyperdrive": "next",
     "hyperswarm": "^4.3.7",
-    "corestore": "^6.4.2",
     "localdrive": "^1.5.0",
     "mirror-drive": "^1.2.2",
     "recursive-watch": "^1.1.4"
