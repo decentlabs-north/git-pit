@@ -1,6 +1,6 @@
 {
   "name": "git-pit",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Peer to Peer Git",
   "main": "index.js",
   "files": [
