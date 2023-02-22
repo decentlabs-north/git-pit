@@ -21,14 +21,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://https://github.com/telamohn/git-pit"
+    "url": "git://https://github.com/decentlabs-north/git-pit/"
   },
   "author": "Tony Ivanov",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/telamohn/git-pit"
+    "url": "https://github.com/decentlabs-north/git-pit/issues"
   },
-  "homepage": "https://github.com/telamohn/git-pit",
+  "homepage": "https://github.com/decentlabs-north/git-pit/",
   "devDependencies": {
     "standard": "^17.0.0",
     "tapzero": "^0.6.1"
