@@ -22,6 +22,7 @@ test('init and clone', async t => {
 
   await clone(keyA, './tmp/c')
   await stopA()
+  await exec('rm -rf ./tmp/')
 })
 
 test.skip('Test add contributor', async t => {

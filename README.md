@@ -10,10 +10,10 @@ over secure peer-to-peer streams kindly supplied by the good peers @ [holepunch]
 At the time of writing this is alpha-grade software,
 Do checkout:
 
-- [blueprint](https://raw.githubusercontent.com/decentlabs-north/whiteboard/master/pit-blueprint-v1.pdf)
-- [issues](https://github.com/decentlabs-north/git-pit/issues)
+- [Blueprint](https://raw.githubusercontent.com/decentlabs-north/whiteboard/master/pit-blueprint-v1.pdf)
+- [Issues](https://github.com/decentlabs-north/git-pit/issues)
 
-Wanna help? Come say hi ➡️ [DLabs Discord](https://discord.gg/8RMRUPZ9RS)
+Wanna help? Come say hi ➡️ [Discord](https://discord.gg/8RMRUPZ9RS)
 
 ## Use
 
