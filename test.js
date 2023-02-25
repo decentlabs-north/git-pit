@@ -7,7 +7,11 @@ import {
   seed,
   info,
   sync,
-  add
+  add,
+  isGitRepo,
+  isPitRepo,
+  isMaintainer,
+  isContributor
 } from './index.js'
 
 test('exec', async t => {
@@ -18,9 +22,18 @@ test('exec', async t => {
 test('init and clone', async t => {
   await exec('rm -rf ./tmp/')
   const keyA = await spawnMaintainer('./tmp/a')
+  t.equal(await isGitRepo('./tmp/a'), true)
+  t.equal(await isPitRepo('./tmp/a'), true)
+  t.equal(await isMaintainer('./tmp/a'), true)
+  t.equal(await isContributor('./tmp/a'), false)
+
   const stopA = await seed('./tmp/a')
 
   await clone(keyA, './tmp/c')
+  t.equal(await isGitRepo('./tmp/c'), true)
+  t.equal(await isPitRepo('./tmp/c'), true)
+  t.equal(await isMaintainer('./tmp/c'), false)
+  t.equal(await isContributor('./tmp/c'), false)
   await stopA()
   await exec('rm -rf ./tmp/')
 })

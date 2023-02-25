@@ -2,7 +2,7 @@
 import { exec as nExec } from 'node:child_process'
 import {
   mkdir,
-  // stat as nstat,
+  stat as nstat,
   writeFile,
   appendFile,
   readFile
@@ -14,6 +14,8 @@ import MirrorDrive from 'mirror-drive'
 import Localdrive from 'localdrive'
 import Hyperswarm from 'hyperswarm'
 
+const GIT_DIR = '.git'
+const PIT_DIR = '.pit' // TODO: replace with `.git/pit`
 const MAIN_DIR = '.pit/repos/main/'
 const REPOS_DIR = '.pit/repos'
 const CORESTORE_DIR = '.pit/corestore'
@@ -35,24 +37,53 @@ export async function exec (cmd, opts = {}) {
   })
 }
 
-export async function isPitRepo () {
-  return false
+export async function isPitRepo (repo) {
+  if (!await isGitRepo(repo)) return false
+  if (!await isDir(join(repo, PIT_DIR))) return false
+  return true
 }
-export async function isGitRepo () {
-  return false
+export async function isGitRepo (repo) {
+  return isDir(join(repo, GIT_DIR))
 }
 
 export async function isMaintainer (repo) {
-  /*
-   * if (isContributor(repo)) {
-    return authors.firstLine === self.key
-  } else false
-  */
-  return true
+  if (!await isPitRepo(repo)) return false
+  const peer = await readProfileRepo(repo)
+  if (!peer) return false
+  const authors = await readAuthors(repo)
+  return peer.key.equals(authors[0])
 }
 
 export async function isContributor (repo) {
-  throw new Error('Not Implemented')
+  if (!await isPitRepo(repo)) return false
+  const peer = await readProfileRepo(repo)
+  if (!peer) return false
+  const authors = await readAuthors(repo)
+  if (!authors) return false // No Authors found, assume maintainer / uninitialized
+  return !peer.key.equals(authors[0])
+}
+
+export async function readAuthors (repo) {
+  let file
+  if (await isFile(join(repo, AUTHORS_FILE))) file = join(repo, AUTHORS_FILE)
+  else if (await isFile(join(repo, MAIN_DIR, AUTHORS_FILE))) file = join(repo, MAIN_DIR, AUTHORS_FILE)
+  else return null
+
+  console.log('Reading authors', file)
+  return (await readFile(file))
+    .toString('utf8')
+    .split('\n')
+    .map(line => Buffer.from(line, 'hex'))
+}
+
+export async function readProfileRepo (repo) {
+  const file = join(repo, PEER_FILE)
+  if (!await isFile(file)) return null
+  const o = JSON.parse(await readFile(join(repo, PEER_FILE)))
+  return {
+    ...o,
+    key: Buffer.from(o.key, 'hex')
+  }
 }
 
 export async function mkdirp (p) {
@@ -63,7 +94,7 @@ export async function mkdirp (p) {
 export async function init (repo, opts = {}) {
   if (!isGitRepo(repo)) throw new Error(`Expected path "${repo}" to be a git repository`)
   await mkdirp(join(repo, REPOS_DIR))
-  const cs = openStore(repo)
+  const cs = await openStore(repo)
   const drive = await touch(cs)
 
   const key = drive.key.toString('hex')
@@ -75,7 +106,8 @@ export async function init (repo, opts = {}) {
   }
   await pitIgnore(repo)
   await writeFile(join(repo, PEER_FILE), JSON.stringify(peerInfo))
-  if (await isMaintainer(repo)) await appendFile(join(repo, AUTHORS_FILE), key)
+  console.log('CREATING AUTHORS FILE', join(repo, AUTHORS_FILE))
+  if (!await isContributor(repo)) await appendFile(join(repo, AUTHORS_FILE), key)
   // TODO: import filter .git/remotes
   const mend = await mirror(await localDrive(join(repo, '.git')), drive)
   const stats = await mend()
@@ -131,7 +163,7 @@ export async function add (repo, peer) {
 }
 
 export async function seed (repo) {
-  const cs = openStore(repo)
+  const cs = await openStore(repo)
   const authors = await readFile(join(repo, AUTHORS_FILE))
   const keys = authors
     .toString('utf8')
@@ -167,8 +199,10 @@ export async function sync (repo) {
 /**
  * @param {repo} string Path to Git-repository
  */
-export function openStore (repo) {
-  return new Corestore(join(repo, CORESTORE_DIR))
+export async function openStore (repo) {
+  const store = new Corestore(join(repo, CORESTORE_DIR))
+  await store.ready()
+  return store
 }
 
 // --------------------------------------------------------
@@ -240,13 +274,20 @@ async function pitIgnore (repo) {
   return true
 }
 
-/*
-async function stat (path) {
-  try {
-    return await nstat(path)
-  } catch (error) {
-    if (error.code === 'ENOENT') return null
-    throw error
-  }
+async function isFile (path) {
+  return nstat(path)
+    .then(s => s.isFile())
+    .catch(err => {
+      if (err.code !== 'ENOENT') throw err
+      else return false
+    })
 }
-*/
+
+async function isDir (path) {
+  return nstat(path)
+    .then(s => s.isDirectory())
+    .catch(err => {
+      if (err.code !== 'ENOENT') throw err
+      else return false
+    })
+}
